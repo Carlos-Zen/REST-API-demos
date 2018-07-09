@@ -1,0 +1,14 @@
+﻿<Properties StartupConfiguration="{6102AB2B-E47D-4E69-8CD9-C5F113DF5775}|Unit Tests">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Huobi.Rest.CSharp.Demo/HuobiApi.cs">
+    <Files>
+      <File FileName="Huobi.Rest.CSharp.Demo/HuobiApi.cs" Line="286" Column="14" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.ItemProperties.Huobi.Rest.CSharp.DemoTest PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MultiItemStartupConfigurations />
+</Properties>

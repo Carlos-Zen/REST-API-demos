@@ -1,4 +1,4 @@
-using Huobi.Rest.CSharp.Demo.Model;
+﻿using Huobi.Rest.CSharp.Demo.Model;
 using RestSharp;
 using System;
 using System.Collections.Generic;

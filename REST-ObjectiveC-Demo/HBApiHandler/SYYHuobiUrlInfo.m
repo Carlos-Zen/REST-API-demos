@@ -6,10 +6,12 @@
 //
 
 #import "SYYHuobiUrlInfo.h"
-
 #import "SYYEncryptionUtils.h"
 #import "SYYUtils.h"
 #import "SYYHuobiConstant.h"
+#import "YYCategories.h"
+#import <openssl/ecdsa.h>
+#import <openssl/pem.h>
 
 @implementation SYYHuobiUrlInfo
 
@@ -77,8 +79,23 @@
     return signature;
 }
 
-
 #pragma mark - Private
+
++ (NSString *)privateSignatureFromSign:(NSString *)sign {
+    NSData *signData = [[sign dataUsingEncoding:NSUTF8StringEncoding] sha256Data];
+    unsigned char *digest = (unsigned char *)signData.bytes;
+    NSString *pivateKey = kHBPrivKey;
+    const char *pemPrivKey = [pivateKey UTF8String];
+    BIO *buf = BIO_new_mem_buf((void*)pemPrivKey, (int)pivateKey.length);
+    EC_KEY *ecKey = PEM_read_bio_ECPrivateKey(buf, nil, nil, nil);
+    int signDataLength = (int)signData.length;
+    unsigned int signLen;
+    unsigned char *signature = (unsigned char *)malloc(ECDSA_size(ecKey));
+    ECDSA_sign(0, digest, signDataLength, signature, &signLen, ecKey);
+    NSData *data =  [[NSData alloc] initWithBytes:signature length:signLen];
+    NSString *privSign = [data base64EncodedString];
+    return privSign;
+}
 
 /**
  签名必选参数

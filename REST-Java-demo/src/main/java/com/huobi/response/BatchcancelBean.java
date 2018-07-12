@@ -1,43 +1,35 @@
 package com.huobi.response;
+package com.huobi.response;
 
-/**
- * @Author ISME
- * @Date 2018/1/14
- * @Time 17:53
- */
-
+/** @Author ISME @Date 2018/1/14 @Time 17:53 */
 public class BatchcancelBean {
-    /**
-     * err-msg : 记录无效
-     * order-id : 2
-     * err-code : base-record-invalid
-     */
+	/** err-msg : 记录无效 order-id : 2 err-code : base-record-invalid */
+	private String errMsg;
 
-    private String errmsg;
-    private String orderid;
-    private String errcode;
+	private String orderId;
+	private String errCode;
 
-    public String getErrmsg() {
-        return errmsg;
-    }
+	public String getErrMsg() {
+		return errMsg;
+	}
 
-    public void setErrmsg(String errmsg) {
-        this.errmsg = errmsg;
-    }
+	public void setErrMsg(String errMsg) {
+		this.errMsg = errMsg;
+	}
 
-    public String getOrderid() {
-        return orderid;
-    }
+	public String getOrderId() {
+		return orderId;
+	}
 
-    public void setOrderid(String orderid) {
-        this.orderid = orderid;
-    }
+	public void setOrderId(String orderId) {
+		this.orderId = orderId;
+	}
 
-    public String getErrcode() {
-        return errcode;
-    }
+	public String getErrCode() {
+		return errCode;
+	}
 
-    public void setErrcode(String errcode) {
-        this.errcode = errcode;
-    }
+	public void setErrCode(String errCode) {
+		this.errCode = errCode;
+	}
 }

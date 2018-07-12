@@ -355,7 +355,9 @@ public class ApiClient {
      * @return
      */
     public BatchcancelResponse submitcancels(List orderList) {
-        BatchcancelResponse resp = post("/v1/order/orders/batchcancel", orderList, new TypeReference<BatchcancelResponse<Batchcancel<List, BatchcancelBean>>>() {
+        Map<String, List> parameterMap = new HashMap();
+        parameterMap.put("order-ids", orderList);
+        BatchcancelResponse resp = post("/v1/order/orders/batchcancel", parameterMap, new TypeReference<BatchcancelResponse<Batchcancel<List, List<BatchcancelBean>>>>() {
         });
         return resp;
     }

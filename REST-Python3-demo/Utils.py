@@ -14,8 +14,11 @@ import urllib
 import urllib.parse
 import urllib.request
 import requests
-from ecdsa import SigningKey
-from hashlib import sha256
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.serialization import load_pem_private_key
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.asymmetric.utils import decode_dss_signature 
 # 此处填写APIKEY
 
 ACCESS_KEY = ""
@@ -23,11 +26,7 @@ SECRET_KEY = ""
 
 # Need to replace with the actual value generated from below command
 # openssl ecparam -name secp256k1 -genkey -noout -out secp256k1-key.pem 
-PRIVATE_KEY = '''-----BEGIN EC PRIVATE KEY-----
-    MHQCAQEEIJxC7lk2nTcVUj+Dh3iIelrGIFwt/lPwJYcUsX10fkr9oAcGBSuBBAAK
-    oUQDQgAEJYDjtP9s7i1FU0Gp3xXq0KQptrtxy63bb3TwlTo49GyasdhZYPF1HILk
-    TskvXRsWal24HAelzpJWnFzXwZnRpw==
-    -----END EC PRIVATE KEY-----'''
+PRIVATE_KEY = open("secp256k1-key.pem", "rb").read()
 
 # API request URL
 MARKET_URL = "https://api.huobi.pro"
@@ -91,7 +90,7 @@ def api_key_get(params, request_path):
     host_name = host_name.lower()
     signature = createSign(params, method, host_name, request_path, SECRET_KEY)
     params['Signature'] = signature
-    params['PrivateSignature'] = createPrivateSignature(signature, PRIVATE_KEY)
+    params['PrivateSignature'] = createPrivateSignature(signature)
     url = host_url + request_path
     return http_get_request(url, params)
 
@@ -109,7 +108,7 @@ def api_key_post(params, request_path):
     host_name = host_name.lower()
     signature = createSign(params_to_sign, method, host_name, request_path, SECRET_KEY)
     params_to_sign['Signature'] = signature
-    params_to_sign['PrivateSignature'] = createPrivateSignature(signature, PRIVATE_KEY)
+    params_to_sign['PrivateSignature'] = createPrivateSignature(signature)
     url = host_url + request_path + '?' + urllib.parse.urlencode(params_to_sign)
     return http_post_request(url, params)
 
@@ -128,7 +127,29 @@ def createSign(pParams, method, host_url, request_path, secret_key):
     return signature
 
 
-def createPrivateSignature(signature, private_key):
-    signingKey = SigningKey.from_pem(private_key,hashfunc=sha256)
-    privateSignature = signingKey.sign(signature.encode(encoding='UTF8'))
-    return base64.b64encode(privateSignature)
+def createPrivateSignature(context):
+    data = bytes(context, encoding='utf8')
+    # Read the pri_key_file
+    digest = hashes.Hash( hashes.SHA256(), default_backend())
+
+    digest.update(data)
+    dgst = digest.finalize()
+    skey = load_pem_private_key( PRIVATE_KEY, password=None, backend=default_backend())
+
+    sig_data = skey.sign( data, ec.ECDSA(hashes.SHA256()))
+    sig_r, sig_s = decode_dss_signature(sig_data)
+
+    sig_bytes = b''
+    key_size_in_bytes = bit_to_bytes(skey.public_key().key_size)
+    sig_r_bytes = sig_r.to_bytes(key_size_in_bytes, "big")
+    sig_bytes += sig_r_bytes
+    #print("ECDSA signature R: {:s}".format(sig_r_bytes.hex()))
+    sig_s_bytes = sig_s.to_bytes(key_size_in_bytes, "big")
+    sig_bytes += sig_s_bytes
+  #  print("ECDSA signature S: {:s}".format(sig_s_bytes.hex()))
+    # print("ECDSA signautre: {:s}".format(sig_bytes.hex()))
+    #print("ECDSA signautre: " + str(base64.b64encode(sig_bytes)))
+    return base64.b64encode(sig_bytes)
+
+def bit_to_bytes(a):
+    return (a + 7) // 8

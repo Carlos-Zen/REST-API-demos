@@ -8,9 +8,12 @@ import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.Security;
 import java.security.Signature;
+import java.security.SignatureException;
 import java.security.interfaces.ECPrivateKey;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -355,11 +358,11 @@ public class ApiClient {
      * @return
      */
     public BatchcancelResponse submitcancels(List orderList) {
-        Map<String, List> parameterMap = new HashMap();
-        parameterMap.put("order-ids", orderList);
-        BatchcancelResponse resp = post("/v1/order/orders/batchcancel", parameterMap, new TypeReference<BatchcancelResponse<Batchcancel<List, List<BatchcancelBean>>>>() {
-        });
-        return resp;
+          Map<String, List> parameterMap = new HashMap();
+          parameterMap.put("order-ids", orderList);
+          BatchcancelResponse resp = post("/v1/order/orders/batchcancel", parameterMap, new TypeReference<BatchcancelResponse<Batchcancel<List, List<BatchcancelBean>>>>() {
+          });
+          return resp;
     }
 
     /**
@@ -494,7 +497,39 @@ class ApiSignature {
 
     static final DateTimeFormatter DT_FORMAT = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss");
     static final ZoneId ZONE_GMT = ZoneId.of("Z");
-
+    static Signature ecdsaSign = null;
+    
+	static {
+		 try {
+			 Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+			 byte[] keyBytes = Base64.getDecoder().decode(Main.PRIVATE_KEY);
+			 PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
+			 KeyFactory keyFactory = KeyFactory.getInstance("EC", "BC");
+			 ECPrivateKey privateKey = (ECPrivateKey) keyFactory.generatePrivate(keySpec); 
+   
+//    byte[] server_sec1 = DatatypeConverter.parseBase64Binary(privateKeyStr);
+//    ASN1Sequence seq = ASN1Sequence.getInstance(server_sec1);
+//    org.bouncycastle.asn1.sec.ECPrivateKey pKey = org.bouncycastle.asn1.sec.ECPrivateKey.getInstance(seq);
+//    AlgorithmIdentifier algId = new AlgorithmIdentifier(X9ObjectIdentifiers.id_ecPublicKey, pKey.getParameters());
+//    byte[] server_pkcs8 = new PrivateKeyInfo(algId, pKey).getEncoded();
+//    KeyFactory fact = KeyFactory.getInstance ("EC","BC");
+//    PrivateKey privateKey = fact.generatePrivate (new PKCS8EncodedKeySpec(server_pkcs8));
+  
+		    ecdsaSign = Signature.getInstance("SHA256withECDSA", new BouncyCastleProvider());
+			ecdsaSign.initSign(privateKey);
+		} catch (InvalidKeyException e) {
+			throw new RuntimeException("Invalid key: " + e.getMessage());
+		} catch (NoSuchAlgorithmException e) {
+			throw new RuntimeException("No such algorithm: " + e.getMessage());
+		} catch (NoSuchProviderException e) {
+			throw new RuntimeException("No such provider: " + e.getMessage());
+		} catch (InvalidKeySpecException e) {
+			throw new RuntimeException("Invalid key Spec: " + e.getMessage());
+		}
+	   
+	     
+	    
+	}
     /**
      * 创建一个有效的签名。该方法为客户端调用，将在传入的params中添加AccessKeyId、Timestamp、SignatureVersion、SignatureMethod、Signature参数。
      *
@@ -544,11 +579,11 @@ class ApiSignature {
         //PrivateSignature
         byte[] signData = null;
         try {
-            signData = sign(actualSign.getBytes(), privateKey);
+            signData = sign(actualSign.getBytes());
             String  privateSignature = Base64.getEncoder().encodeToString(signData);
             params.put("PrivateSignature", privateSignature);
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
+        } catch (SignatureException e) {
+            throw new RuntimeException("Signature exception:" + e.getMessage());
         }
 
         if (log.isDebugEnabled()) {
@@ -561,29 +596,12 @@ class ApiSignature {
     /**
      * 
      * @param data
-     * @param privateKey
-     * @return
+     * @return byte[]
+     * @throws SignatureException 
      * @throws Exception
      */
-    public  byte[] sign(byte[] data, String privateKeyStr) throws Exception  {
-        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
-          
-        byte[] keyBytes = Base64.getDecoder().decode(privateKeyStr);
-        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
-        KeyFactory keyFactory = KeyFactory.getInstance("EC", "BC");
-        ECPrivateKey privateKey = (ECPrivateKey) keyFactory.generatePrivate(keySpec);
-       
-//        byte[] server_sec1 = DatatypeConverter.parseBase64Binary(privateKeyStr);
-//        ASN1Sequence seq = ASN1Sequence.getInstance(server_sec1);
-//        org.bouncycastle.asn1.sec.ECPrivateKey pKey = org.bouncycastle.asn1.sec.ECPrivateKey.getInstance(seq);
-//        AlgorithmIdentifier algId = new AlgorithmIdentifier(X9ObjectIdentifiers.id_ecPublicKey, pKey.getParameters());
-//        byte[] server_pkcs8 = new PrivateKeyInfo(algId, pKey).getEncoded();
-//        KeyFactory fact = KeyFactory.getInstance ("EC","BC");
-//        PrivateKey privateKey = fact.generatePrivate (new PKCS8EncodedKeySpec(server_pkcs8));
-      
-        Signature ecdsaSign = Signature.getInstance("SHA256withECDSA", new BouncyCastleProvider());
-        ecdsaSign.initSign(privateKey);
-        ecdsaSign.update(data);
+    public static synchronized byte[] sign(byte[] data) throws SignatureException   {
+    	ecdsaSign.update(data);
         byte[] signData = ecdsaSign.sign();
         return signData;
    }

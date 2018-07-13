@@ -2,7 +2,7 @@
 
 ### Useage:
 
-Only in windows
+Only in windows 10
 
 ```csharp
     HuobiApi api = new HuobiApi("accessKey","seceretKey","privateKey");

@@ -1,11 +1,9 @@
 # Huobi.Rest.CSharp.Demo
+ 
 
 ### Useage:
-
-Only in windows 10
-
 ```csharp
-    HuobiApi api = new HuobiApi("accessKey","seceretKey","privateKey");
+    HuobiApi api = new HuobiApi("accessKey","seceretKey");
     var result = api.GetAllAccount();
 ```
 

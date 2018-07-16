@@ -7,31 +7,29 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Web;
-
-
+/// <summary>
+/// GitHub:https://github.com/CryptocurrencyToolKits/Huobi.Rest.CSharp.Demo
+/// </summary>
 namespace Huobi.Rest.CSharp.Demo
 {
-    /// <summary>
-    /// GitHub:https://github.com/huobiapi/REST-API-demos
-    /// </summary>
     public class HuobiApi
     {
 
-        #region HuoBiApi configuration information
+        #region HuoBiApi配置信息
         /// <summary>
-        /// API URL domain name
+        /// API域名名称
         /// </summary>
         private readonly string HUOBI_HOST = string.Empty;
         /// <summary>
-        /// API URL
+        /// APi域名地址
         /// </summary>
         private readonly string HUOBI_HOST_URL = string.Empty;
         /// <summary>
-        /// Encryption method
+        /// 加密方法
         /// </summary>
         private const string HUOBI_SIGNATURE_METHOD = "HmacSHA256";
         /// <summary>
-        /// API version
+        /// API版本
         /// </summary>
         private const int HUOBI_SIGNATURE_VERSION = 2;
         /// <summary>
@@ -42,42 +40,26 @@ namespace Huobi.Rest.CSharp.Demo
         /// SECRET_KEY()
         /// </summary>
         private readonly string SECRET_KEY = string.Empty;
-        /// <summary>
-        ///PRIVATE_KEY()
-        /// </summary>
-        private readonly string PRIVATE_KEY = string.Empty;
         #endregion
 
-        #region HuoBiApi interfaces
+        #region HuoBiApi接口地址
         private const string API_ACCOUNBT_BALANCE = "/v1/account/accounts/{0}/balance";
         private const string API_ACCOUNBT_ALL = "/v1/account/accounts";
         private const string API_ORDERS_PLACE = "/v1/order/orders/place";
         #endregion
 
-        #region construct function
-        private RestClient client;//Restful request client
-        
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:Huobi.Rest.CSharp.Demo.HuobiApi"/> class.
-        /// </summary>
-        /// <param name="accessKey">Access key.</param>
-        /// <param name="secretKey">Secret key.</param>
-        /// <param name="privateKey">ECDSA algorithm private key.</param>
-        /// <param name="huobi_host">Huobi host.</param>
-        public HuobiApi(string accessKey, string secretKey, string privateKey,  string huobi_host = "api.huobi.pro")
+        #region 构造函数
+        private RestClient client;//http请求客户端
+        public HuobiApi(string accessKey, string secretKey, string huobi_host = "api.huobi.pro")
         {
             ACCESS_KEY = accessKey;
             SECRET_KEY = secretKey;
-            PRIVATE_KEY = privateKey;
             HUOBI_HOST = huobi_host;
             HUOBI_HOST_URL = "https://" + HUOBI_HOST;
             if (string.IsNullOrEmpty(ACCESS_KEY))
                 throw new ArgumentException("ACCESS_KEY Cannt Be Null Or Empty");
             if (string.IsNullOrEmpty(SECRET_KEY))
                 throw new ArgumentException("SECRET_KEY  Cannt Be Null Or Empty");
-            if (string.IsNullOrEmpty(PRIVATE_KEY))
-                throw new ArgumentException("ECDSA PRIVATE_KEY  Cannt Be Null Or Empty");
             if (string.IsNullOrEmpty(HUOBI_HOST))
                 throw new ArgumentException("HUOBI_HOST  Cannt Be Null Or Empty");
             client = new RestClient(HUOBI_HOST_URL);
@@ -86,22 +68,12 @@ namespace Huobi.Rest.CSharp.Demo
         }
         #endregion
 
-        #region HuoBiApi interface methods
-        /// <summary>
-        /// Get all accounts
-        /// </summary>
-        /// <returns></returns>
+        #region HuoBiApi方法
         public List<Account> GetAllAccount()
         {
             var result = SendRequest<List<Account>>(API_ACCOUNBT_ALL);
             return result.Data;
         }
-        
-        /// <summary>
-        /// Place order
-        /// </summary>
-        /// <param name="req"></param>
-        /// <returns></returns>
         public HBResponse<long> OrderPlace(OrderPlaceRequest req)
         {
             var bodyParas = new Dictionary<string, string>();
@@ -110,9 +82,9 @@ namespace Huobi.Rest.CSharp.Demo
         }
         #endregion
 
-        #region HTTP request method
+        #region HTTP请求方法
         /// <summary>
-        /// Make a REST GET request
+        /// 发起Http请求
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="resourcePath"></param>
@@ -122,11 +94,7 @@ namespace Huobi.Rest.CSharp.Demo
         {
             parameters = UriEncodeParameterValue(GetCommonParameters() + parameters);//请求参数
             var sign = GetSignatureStr(Method.GET, HUOBI_HOST, resourcePath, parameters);//签名
-            var privateSign = GetPrivateSignatureStr(PRIVATE_KEY, sign);
-            var signUrl = UrlEncode(sign);
-            var privateSignUrl = UrlEncode(privateSign);
-            parameters += $"&Signature={signUrl}";
-            parameters += $"&PrivateSignature={privateSignUrl}";
+            parameters += $"&Signature={sign}";
 
             var url = $"{HUOBI_HOST_URL}{resourcePath}?{parameters}";
             Console.WriteLine(url);
@@ -134,24 +102,11 @@ namespace Huobi.Rest.CSharp.Demo
             var result = client.Execute<HBResponse<T>>(request);
             return result.Data;
         }
-
-        /// <summary>
-        /// Make a REST POST request
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <typeparam name="P"></typeparam>
-        /// <param name="resourcePath"></param>
-        /// <param name="postParameters"></param>
-        /// <returns></returns>
         private HBResponse<T> SendRequest<T, P>(string resourcePath, P postParameters) where T : new()
         {
             var parameters = UriEncodeParameterValue(GetCommonParameters());//请求参数
             var sign = GetSignatureStr(Method.POST, HUOBI_HOST, resourcePath, parameters);//签名
-            var privateSign = GetPrivateSignatureStr(PRIVATE_KEY, sign);
-            var signUrl = UrlEncode(sign);
-            var privateSignUrl = UrlEncode(privateSign);
-            parameters += $"&Signature={signUrl}";
-            parameters += $"&PrivateSignature={privateSignUrl}";
+            parameters += $"&Signature={sign}";
 
             var url = $"{HUOBI_HOST_URL}{resourcePath}?{parameters}";
             Console.WriteLine(url);
@@ -165,7 +120,7 @@ namespace Huobi.Rest.CSharp.Demo
             return result.Data;
         }
         /// <summary>
-        /// Get common request parameters
+        /// 获取通用签名参数
         /// </summary>
         /// <returns></returns>
         private string GetCommonParameters()
@@ -173,9 +128,9 @@ namespace Huobi.Rest.CSharp.Demo
             return $"AccessKeyId={ACCESS_KEY}&SignatureMethod={HUOBI_SIGNATURE_METHOD}&SignatureVersion={HUOBI_SIGNATURE_VERSION}&Timestamp={DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss")}";
         }
         /// <summary>
-        /// Uri encode parameter values
+        /// Uri参数值进行转义
         /// </summary>
-        /// <param name="parameters">parameter string</param>
+        /// <param name="parameters">参数字符串</param>
         /// <returns></returns>
         private string UriEncodeParameterValue(string parameters)
         {
@@ -194,7 +149,7 @@ namespace Huobi.Rest.CSharp.Demo
             return sb.ToString().TrimEnd('&');
         }
         /// <summary>
-        /// Url encode string
+        /// 转义字符串
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
@@ -215,7 +170,7 @@ namespace Huobi.Rest.CSharp.Demo
             return builder.ToString();
         }
         /// <summary>
-        /// Hmacsha256 encryption
+        /// Hmacsha256加密
         /// </summary>
         /// <param name="text"></param>
         /// <param name="secretKey"></param>
@@ -229,12 +184,12 @@ namespace Huobi.Rest.CSharp.Demo
             }
         }
         /// <summary>
-        /// Sign URL request parametes 
+        /// 请求参数签名
         /// </summary>
-        /// <param name="method">request method</param>
-        /// <param name="host">API url domain name</param>
-        /// <param name="resourcePath">url address</param>
-        /// <param name="parameters">request parameters</param>
+        /// <param name="method">请求方法</param>
+        /// <param name="host">API域名</param>
+        /// <param name="resourcePath">资源地址</param>
+        /// <param name="parameters">请求参数</param>
         /// <returns></returns>
         private string GetSignatureStr(Method method, string host, string resourcePath, string parameters)
         {
@@ -243,7 +198,7 @@ namespace Huobi.Rest.CSharp.Demo
             sb.Append(method.ToString().ToUpper()).Append("\n")
                 .Append(host).Append("\n")
                 .Append(resourcePath).Append("\n");
-            //parameters ordering
+            //参数排序
             var paraArray = parameters.Split('&');
             List<string> parametersList = new List<string>();
             foreach (var item in paraArray)
@@ -256,40 +211,9 @@ namespace Huobi.Rest.CSharp.Demo
                 sb.Append(item).Append("&");
             }
             sign = sb.ToString().TrimEnd('&');
-            //calculate the parameters with the defined encryption method
+            //计算签名，将以下两个参数传入加密哈希函数
             sign = CalculateSignature256(sign, SECRET_KEY);
-
-            return sign;
-        }
-
-        /// <summary>
-        /// Sign with ECDsa encryption method with the generated ECDsa private key
-        /// </summary>
-        /// <param name="privateKeyStr"></param>
-        /// <param name="signData"></param>
-        /// <returns></returns>
-        private String GetPrivateSignatureStr(string privateKeyStr, string signData)
-        {
-            var privateSignedData = string.Empty;
-            try
-            {
-                byte[] keyBytes = Convert.FromBase64String(privateKeyStr);
-                CngKey cng = CngKey.Import(keyBytes, CngKeyBlobFormat.Pkcs8PrivateBlob);
-
-                ECDsaCng dsa = new ECDsaCng(cng)
-                {
-                    HashAlgorithm = CngAlgorithm.Sha256
-                };
-
-                byte[] signDataBytes = Encoding.UTF8.GetBytes(signData);
-                privateSignedData = Convert.ToBase64String(dsa.SignData(signDataBytes));
-            }
-            catch(CryptographicException e)
-            {
-                Console.WriteLine("Private signature error because: " + e.Message);
-            }
-          
-            return privateSignedData;
+            return UrlEncode(sign);
         }
         #endregion
 

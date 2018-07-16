@@ -1,15 +1,8 @@
 <?php
 /**
 * 火币REST API库
-* @author https://github.com/del-xiong/huobi_rest_api
+* @author https://github.com/del-xiong
 */
-use Mdanter\Ecc\EccFactory;
-use Mdanter\Ecc\Crypto\Signature\Signer;
-use Mdanter\Ecc\Serializer\PrivateKey\PemPrivateKeySerializer;
-use Mdanter\Ecc\Serializer\PrivateKey\DerPrivateKeySerializer;
-use Mdanter\Ecc\Serializer\Signature\DerSignatureSerializer;
-use Mdanter\Ecc\Serializer\PublicKey\DerPublicKeySerializer;
-use Mdanter\Ecc\Serializer\PublicKey\PemPublicKeySerializer;
 class req {
 	private $api = 'api.huobi.pro';
 	public $api_method = '';
@@ -372,28 +365,8 @@ class req {
 			$sort_rank[] = ord($k);
 		}
 		asort($u);
-		$signature = $this->create_sig($u);
-		$u[] = "Signature=".urlencode($signature);
-		$u[] = "PrivateSignature=".urlencode($this->ecdsasign($signature));
+		$u[] = "Signature=".urlencode($this->create_sig($u));
 		return implode('&', $u);
-	}
-	// ecdsa效验
-	function ecdsasign($sig) {
-		$adapter = EccFactory::getAdapter();
-		$generator = EccFactory::getNistCurves()->generator384();
-		$useDerandomizedSignatures = true;
-		$algorithm = 'sha256';
-		$pemSerializer = new PemPrivateKeySerializer(new DerPrivateKeySerializer($adapter));
-		$key = $pemSerializer->parse(PRIVATE_KEY);
-		$signer = new Signer($adapter);
-		$hash = $signer->hashData($generator, $algorithm, $sig);
-		// 随机数加盐签名 可大幅提高安全性
-		$random = \Mdanter\Ecc\Random\RandomGeneratorFactory::getHmacRandomGenerator($key, $hash, $algorithm);
-		$randomK = $random->generate($generator->getOrder());
-		$signature = $signer->sign($key, $hash, $randomK);
-		$serializer = new DerSignatureSerializer();
-		$serializedSig = $serializer->serialize($signature);
-		return base64_encode($serializedSig);
 	}
 	// 生成签名
 	function create_sig($param) {
@@ -412,7 +385,7 @@ class req {
 		curl_setopt($ch,CURLOPT_HEADER,0);
 		curl_setopt($ch, CURLOPT_TIMEOUT,60);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);  
 		curl_setopt ($ch, CURLOPT_HTTPHEADER, [
 			"Content-Type: application/json",
 			]);

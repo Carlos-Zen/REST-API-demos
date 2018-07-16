@@ -11,5 +11,4 @@
 #define kBaseUrl @"https://api.huobi.pro"
 #define kHBAccessKey @"xxxxxxxx-xxxxxxxx-xxxxxxxx-xxxxx"
 #define kHBSecretKey @"xxxxxxxx-xxxxxxxx-xxxxxxxx-xxxxx"
-#define kHBPrivKey @"'-----BEGIN EC PRIVATE KEY-----\nxxxxxxxxxxxxxxxxxxx\n-----END EC PRIVATE KEY-----"
 #endif /* SYYHuobiConstant_h */

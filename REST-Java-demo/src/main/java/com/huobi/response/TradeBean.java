@@ -16,17 +16,17 @@ public class TradeBean {
      * ts : 1489464451000
      */
 
-    private int id;
+    private long id;
     private double price;
     private double amount;
     private String direction;
     private long ts;
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

@@ -24,7 +24,7 @@ public class Merged {
      * bid : [1884,1.6702]
      */
 
-    private int id;
+    private long id;
     private long ts;
     private int close;
     private int open;
@@ -36,11 +36,11 @@ public class Merged {
     private List<Integer> ask;
     private List<Integer> bid;
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

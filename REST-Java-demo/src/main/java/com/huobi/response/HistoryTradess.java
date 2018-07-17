@@ -13,15 +13,15 @@ public class HistoryTradess {
      * data : [{"id":17592256642623,"amount":0.04,"price":1997,"direction":"buy","ts":1502448920106}]
      */
 
-    private int id;
+    private long id;
     private long ts;
     private HistoryTrade data;
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

@@ -20,11 +20,11 @@ public class MatchresultsOrdersDetail {
      * created-at : 1494901400435
      */
 
-    private int id;
+    private long id;
     @com.google.gson.annotations.SerializedName("order-id")
-    private int orderid;
+    private long orderid;
     @com.google.gson.annotations.SerializedName("match-id")
-    private int matchid;
+    private long matchid;
     private String symbol;
     private String type;
     private String source;
@@ -36,27 +36,27 @@ public class MatchresultsOrdersDetail {
     @com.google.gson.annotations.SerializedName("created-at")
     private long createdat;
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 
-    public int getOrderid() {
+    public long getOrderid() {
         return orderid;
     }
 
-    public void setOrderid(int orderid) {
+    public void setOrderid(long orderid) {
         this.orderid = orderid;
     }
 
-    public int getMatchid() {
+    public long getMatchid() {
         return matchid;
     }
 
-    public void setMatchid(int matchid) {
+    public void setMatchid(long matchid) {
         this.matchid = matchid;
     }
 

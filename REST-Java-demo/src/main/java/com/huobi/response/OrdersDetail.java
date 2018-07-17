@@ -28,7 +28,7 @@ public class OrdersDetail {
      * batch :
      */
 
-    private int id;
+    private long id;
     private String symbol;
     private int accountid;
     private String amount;
@@ -42,15 +42,15 @@ public class OrdersDetail {
     private int userid;
     private String source;
     private String state;
-    private int canceledat;
+    private long canceledat;
     private String exchange;
     private String batch;
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -158,11 +158,11 @@ public class OrdersDetail {
         this.state = state;
     }
 
-    public int getCanceledat() {
+    public long getCanceledat() {
         return canceledat;
     }
 
-    public void setCanceledat(int canceledat) {
+    public void setCanceledat(long canceledat) {
         this.canceledat = canceledat;
     }
 

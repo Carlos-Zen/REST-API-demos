@@ -30,7 +30,7 @@ public class IntrustDetail {
      * batch :
      */
 
-    private int id;
+    private long id;
     private String symbol;
     @SerializedName("account-id")
     private int accountid;
@@ -56,11 +56,11 @@ public class IntrustDetail {
     private String exchange;
     private String batch;
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

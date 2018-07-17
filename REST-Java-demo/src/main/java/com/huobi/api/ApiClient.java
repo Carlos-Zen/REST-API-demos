@@ -382,10 +382,27 @@ public class ApiClient {
         HashMap map = new HashMap();
         map.put("symbol", req.symbol);
         map.put("states", req.states);
-//    map.put("symbol",symbol);
-//    map.put("symbol",symbol);
-//    map.put("symbol",symbol);
-//    map.put("symbol",symbol);
+        if (req.startDate!=null) {
+           map.put("startDate",req.startDate);
+		}
+        if (req.startDate!=null) {
+            map.put("start-date",req.startDate);
+ 		}
+        if (req.endDate!=null) {
+            map.put("end-date",req.endDate);
+ 		}
+        if (req.types!=null) {
+            map.put("types",req.types);
+ 		}
+        if (req.from!=null) {
+            map.put("from",req.from);
+ 		}
+        if (req.direct!=null) {
+            map.put("direct",req.direct);
+ 		}
+        if (req.size!=null) {
+            map.put("size",req.size);
+ 		}
 
         IntrustDetailResponse resp = get("/v1/order/orders/", map, new TypeReference<IntrustDetailResponse<List<IntrustDetail>>>() {
         });

@@ -9,7 +9,7 @@ package com.huobi.response;
 public class Kline {
 
 
-    private int id;
+    private long id;
     private double amount;
     private int count;
     private double open;
@@ -18,11 +18,11 @@ public class Kline {
     private int high;
     private double vol;
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

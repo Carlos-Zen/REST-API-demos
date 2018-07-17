@@ -204,7 +204,7 @@ def orders_list(symbol, states, types=None, start_date=None, end_date=None, _fro
               'states': states}
 
     if types:
-        params[types] = types
+        params['types'] = types
     if start_date:
         params['start-date'] = start_date
     if end_date:

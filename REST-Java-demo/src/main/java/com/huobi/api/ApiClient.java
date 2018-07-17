@@ -5,16 +5,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
-import java.security.KeyFactory;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.Security;
-import java.security.Signature;
-import java.security.SignatureException;
-import java.security.interfaces.ECPrivateKey;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -31,7 +23,6 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,7 +92,6 @@ public class ApiClient {
 
     final String accessKeyId;
     final String accessKeySecret;
-    final String privateKey;
     final String assetPassword;
 
     /**
@@ -110,10 +100,9 @@ public class ApiClient {
      * @param accessKeyId     AccessKeyId
      * @param accessKeySecret AccessKeySecret
      */
-    public ApiClient(String accessKeyId, String accessKeySecret, String privateKey) {
+    public ApiClient(String accessKeyId, String accessKeySecret) {
         this.accessKeyId = accessKeyId;
         this.accessKeySecret = accessKeySecret;
-        this.privateKey = privateKey;
         this.assetPassword = null;
     }
 
@@ -124,10 +113,9 @@ public class ApiClient {
      * @param accessKeySecret AccessKeySecret
      * @param assetPassword   AssetPassword
      */
-    public ApiClient(String accessKeyId, String accessKeySecret, String privateKey, String assetPassword) {
+    public ApiClient(String accessKeyId, String accessKeySecret, String assetPassword) {
         this.accessKeyId = accessKeyId;
         this.accessKeySecret = accessKeySecret;
-        this.privateKey = privateKey;
         this.assetPassword = assetPassword;
     }
 
@@ -427,7 +415,7 @@ public class ApiClient {
     <T> T call(String method, String uri, Object object, Map<String, String> params,
                TypeReference<T> ref) {
         ApiSignature sign = new ApiSignature();
-        sign.createSignature(this.accessKeyId, this.accessKeySecret,this.privateKey, method, API_HOST, uri, params);
+        sign.createSignature(this.accessKeyId, this.accessKeySecret, method, API_HOST, uri, params);
         try {
             Request.Builder builder = null;
             if ("POST".equals(method)) {
@@ -497,39 +485,7 @@ class ApiSignature {
 
     static final DateTimeFormatter DT_FORMAT = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss");
     static final ZoneId ZONE_GMT = ZoneId.of("Z");
-    static Signature ecdsaSign = null;
-    
-	static {
-		 try {
-			 Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
-			 byte[] keyBytes = Base64.getDecoder().decode(Main.PRIVATE_KEY);
-			 PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
-			 KeyFactory keyFactory = KeyFactory.getInstance("EC", "BC");
-			 ECPrivateKey privateKey = (ECPrivateKey) keyFactory.generatePrivate(keySpec); 
    
-//    byte[] server_sec1 = DatatypeConverter.parseBase64Binary(privateKeyStr);
-//    ASN1Sequence seq = ASN1Sequence.getInstance(server_sec1);
-//    org.bouncycastle.asn1.sec.ECPrivateKey pKey = org.bouncycastle.asn1.sec.ECPrivateKey.getInstance(seq);
-//    AlgorithmIdentifier algId = new AlgorithmIdentifier(X9ObjectIdentifiers.id_ecPublicKey, pKey.getParameters());
-//    byte[] server_pkcs8 = new PrivateKeyInfo(algId, pKey).getEncoded();
-//    KeyFactory fact = KeyFactory.getInstance ("EC","BC");
-//    PrivateKey privateKey = fact.generatePrivate (new PKCS8EncodedKeySpec(server_pkcs8));
-  
-		    ecdsaSign = Signature.getInstance("SHA256withECDSA", new BouncyCastleProvider());
-			ecdsaSign.initSign(privateKey);
-		} catch (InvalidKeyException e) {
-			throw new RuntimeException("Invalid key: " + e.getMessage());
-		} catch (NoSuchAlgorithmException e) {
-			throw new RuntimeException("No such algorithm: " + e.getMessage());
-		} catch (NoSuchProviderException e) {
-			throw new RuntimeException("No such provider: " + e.getMessage());
-		} catch (InvalidKeySpecException e) {
-			throw new RuntimeException("Invalid key Spec: " + e.getMessage());
-		}
-	   
-	     
-	    
-	}
     /**
      * 创建一个有效的签名。该方法为客户端调用，将在传入的params中添加AccessKeyId、Timestamp、SignatureVersion、SignatureMethod、Signature参数。
      *
@@ -540,7 +496,7 @@ class ApiSignature {
      * @param uri          请求路径，注意不含?以及后的参数，例如"/v1/api/info"
      * @param params       原始请求参数，以Key-Value存储，注意Value不要编码
      */
-    public void createSignature(String appKey, String appSecretKey, String privateKey, String method, String host,
+    public void createSignature(String appKey, String appSecretKey, String method, String host,
                                 String uri, Map<String, String> params) {
         StringBuilder sb = new StringBuilder(1024);
         sb.append(method.toUpperCase()).append('\n') // GET
@@ -576,15 +532,7 @@ class ApiSignature {
         byte[] hash = hmacSha256.doFinal(payload.getBytes(StandardCharsets.UTF_8));
         String actualSign = Base64.getEncoder().encodeToString(hash);
         params.put("Signature", actualSign);
-        //PrivateSignature
-        byte[] signData = null;
-        try {
-            signData = sign(actualSign.getBytes());
-            String  privateSignature = Base64.getEncoder().encodeToString(signData);
-            params.put("PrivateSignature", privateSignature);
-        } catch (SignatureException e) {
-            throw new RuntimeException("Signature exception:" + e.getMessage());
-        }
+        
 
         if (log.isDebugEnabled()) {
             log.debug("Dump parameters:");
@@ -593,18 +541,7 @@ class ApiSignature {
             }
         }
     }
-    /**
-     * 
-     * @param data
-     * @return byte[]
-     * @throws SignatureException 
-     * @throws Exception
-     */
-    public static synchronized byte[] sign(byte[] data) throws SignatureException   {
-    	ecdsaSign.update(data);
-        byte[] signData = ecdsaSign.sign();
-        return signData;
-   }
+   
 
     /**
      * 使用标准URL Encode编码。注意和JDK默认的不同，空格被编码为%20而不是+。

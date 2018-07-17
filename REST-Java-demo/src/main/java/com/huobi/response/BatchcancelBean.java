@@ -1,5 +1,4 @@
 package com.huobi.response;
-package com.huobi.response;
 
 /** @Author ISME @Date 2018/1/14 @Time 17:53 */
 public class BatchcancelBean {

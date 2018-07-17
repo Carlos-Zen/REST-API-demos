@@ -14,15 +14,15 @@ public class Trade<T> {
      * data : [{"id":600848670,"price":7962.62,"amount":0.0122,"direction":"buy","ts":1489464451000}]
      */
 
-    private int id;
+    private long id;
     private long ts;
     private T data;
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

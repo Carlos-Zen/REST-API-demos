@@ -28,7 +28,6 @@ public class Main {
 
     static final String API_KEY = "KEY";
     static final String API_SECRET = "SECRET";
-    static final String PRIVATE_KEY = "MIGEAgEAMBAGByqGSM49AgEGBSuBBAAKBG0wawIBAQQgnELuWTadNxVSP4OHeIh6WsYgXC3+U/AlhxSxfXR+Sv2hRANCAAQlgOO0/2zuLUVTQanfFerQpCm2u3HLrdtvdPCVOjj0bJqx2Flg8XUcguROyS9dGxZqXbgcB6XOklacXNfBmdGn";
   
     
     public static void main(String[] args) {
@@ -42,7 +41,7 @@ public class Main {
     
     static void apiSample() {
         // create ApiClient using your api key and api secret:
-        ApiClient client = new ApiClient(API_KEY, API_SECRET, PRIVATE_KEY);
+        ApiClient client = new ApiClient(API_KEY, API_SECRET);
         // get symbol list:
         print(client.getSymbols());
 
